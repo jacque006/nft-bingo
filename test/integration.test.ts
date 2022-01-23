@@ -2,6 +2,7 @@ import { expect } from "chai";
 import { BigNumber, Signer } from "ethers";
 import { ethers } from "hardhat";
 import { BingoGame, BingoGame__factory } from "../typechain-types";
+import { BingoCard } from "../client";
 
 describe("integration", () => {
   let signer: Signer;
@@ -25,8 +26,18 @@ describe("integration", () => {
     );
     expect(events).to.have.lengthOf(numCards);
 
-    const cardIds = events?.map((e) =>
-      BigNumber.from(e.args?.tokenId).toNumber()
+    const cardIds = events?.map((e) => BigNumber.from(e.args?.tokenId));
+    if (!cardIds || !cardIds.length) {
+      throw new Error("cardIds invalid");
+    }
+    const cards = await Promise.all(
+      cardIds.map(async (id) => {
+        const values = await game.getCardValues(id);
+        return new BingoCard(id, values);
+      })
     );
+    for (const c of cards) {
+      c.validate();
+    }
   });
 });
