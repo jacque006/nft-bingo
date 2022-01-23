@@ -1,5 +1,10 @@
 import { BigNumber } from "ethers";
-import { NUM_VALUES, VALID_COLUMN_VALUES, FREE_VALUE } from "./constants";
+import {
+  NUM_VALUES,
+  VALID_COLUMN_VALUES,
+  FREE_VALUE,
+  VALUES_PER_COLUMN,
+} from "./constants";
 
 type DuplicateValue = {
   value: number;
@@ -24,15 +29,33 @@ export default class BingoCard {
 
       prev[value] += 1;
       return prev;
-    }, {} as NumberMap );
+    }, {} as NumberMap);
 
-    return Object.entries<number>(valueCounter).reduce((prev, [value, count]) => {
-      if (count < 2) {
-        return prev;
+    return Object.entries<number>(valueCounter).reduce(
+      (prev, [value, count]) => {
+        if (count < 2) {
+          return prev;
+        }
+
+        return [...prev, { value: parseInt(value), count }];
+      },
+      [] as DuplicateValue[]
+    );
+  }
+
+  private validateColumnValues() {
+    for (let i = 0; i < this.values.length; i++) {
+      const v = this.values[i];
+      const columnIdx = i % VALUES_PER_COLUMN;
+      const validValueSet = VALID_COLUMN_VALUES[columnIdx];
+
+      if (!validValueSet.has(v)) {
+        const validValuesStr = Array.from(validValueSet.values()).join(", ");
+        throw new Error(
+          `invalid column value ${v} at ${i} in column ${columnIdx}, expected one of ${validValuesStr}`
+        );
       }
-
-      return [...prev, { value: parseInt(value), count }];
-    }, [] as DuplicateValue[]);
+    }
   }
 
   public validate() {
@@ -51,9 +74,13 @@ export default class BingoCard {
 
     const duplicates = this.getDuplicateValues();
     if (duplicates.length) {
-      throw new Error(`duplicate value(s): ${duplicates.map((d) => `${d.count} ${d.value}'s`).join(", ")}`);
+      throw new Error(
+        `duplicate value(s): ${duplicates
+          .map((d) => `${d.count} ${d.value}'s`)
+          .join(", ")}`
+      );
     }
 
-    throw new Error("TODO implement");
+    this.validateColumnValues();
   }
 }

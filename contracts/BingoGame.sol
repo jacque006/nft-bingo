@@ -13,12 +13,12 @@ contract BingoGame is ERC721 {
 
     // TODO Should the card values be abi.encode/abi.encodePacked to save space?
     mapping(uint256 => uint8[25]) private idToCardValues;
-    bool public hasStarted = false;
+    uint8[74] public calledNumbers;
 
     constructor() ERC721("BingoCard", "BC") {}
 
     function createCard(address owner) public {
-        require(!hasStarted, "game has already started");
+        require(!hasStarted(), "game has already started");
 
         tokenIdCounter.increment();
         uint256 newCardId = tokenIdCounter.current();
@@ -37,8 +37,12 @@ contract BingoGame is ERC721 {
         return idToCardValues[tokenId];
     }
 
-    function runGame(uint8[74] calldata calledNumbers) external {
-        hasStarted = true;
+    function hasStarted() public view virtual returns (bool) {
+        return calledNumbers.length > 0;
+    }
+
+    function runGame(uint8[74] memory _calledNumbers) external {
+        calledNumbers = _calledNumbers;
     }
 
     // TODO implement
