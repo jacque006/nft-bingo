@@ -2,7 +2,7 @@ import { expect } from "chai";
 import { BigNumber, Signer } from "ethers";
 import { ethers } from "hardhat";
 import { BingoGame, BingoGame__factory } from "../typechain-types";
-import { BingoCard, NUM_VALUES } from "../client";
+import { BingoCard } from "../client";
 
 describe("integration", () => {
   let signer: Signer;
@@ -16,9 +16,12 @@ describe("integration", () => {
 
   it("runs a bingo game successfully", async function () {
     const numCards = 10;
-    const rawCards: number[][] = new Array<number[]>(numCards).fill(
-      new Array<number>(NUM_VALUES).fill(0)
+    const rawCards: number[][] = await Promise.all(
+      new Array<number[]>(numCards)
+        .fill([])
+        .map(async () => BingoCard.generateRandomValues())
     );
+
     const signerAddress = await signer.getAddress();
 
     const txn = await game.mintCards(signerAddress, rawCards);
@@ -41,7 +44,7 @@ describe("integration", () => {
     );
     for (let i = 0; i < cards.length; i++) {
       const c = cards[i];
-      expect(c.values).to.equal(rawCards[i]);
+      expect(c.values).to.deep.equal(rawCards[i]);
       expect(c.tokenId).to.equal(i + 1);
     }
   });

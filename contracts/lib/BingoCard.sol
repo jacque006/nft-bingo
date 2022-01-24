@@ -4,6 +4,7 @@ pragma solidity >=0.8.11;
 import "./Constants.sol";
 
 library BingoCard {
+    // TODO implement
     function hasDuplicateValues(uint8[25] memory card) internal pure returns (bool) {
         return false;
     }
@@ -27,7 +28,8 @@ library BingoCard {
                 continue;
             }
             require(column[i] <= Constants.MAX_VALUE, "value > 75");
-            require(validColumnValuesBitmask & (1 << column[i]) == 1, "column value not valid");
+            uint80 valueBitmask = uint80(1 << column[i]);
+            require(validColumnValuesBitmask & valueBitmask == valueBitmask, "column value not valid");
         }
     }
 

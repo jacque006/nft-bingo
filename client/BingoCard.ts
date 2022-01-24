@@ -1,18 +1,11 @@
+import { randomInt } from "crypto";
 import { BigNumber } from "ethers";
 import {
-  NUM_VALUES,
+  CARD_WIDTH_HEIGHT,
   COLUMN_VALUES,
+  FREE_VALUE_INDEX,
   FREE_VALUE,
-  VALUES_PER_COLUMN,
-} from "./constants";
-
-type DuplicateValue = {
-  value: number;
-  count: number;
-};
-type NumberMap = {
-  [key: number]: number;
-};
+} from "./Constants";
 
 export default class BingoCard {
   constructor(
@@ -20,69 +13,21 @@ export default class BingoCard {
     public readonly values: number[]
   ) {}
 
-  private getDuplicateValues(): DuplicateValue[] {
-    const valueCounter = this.values.reduce((prev, value) => {
-      if (!prev[value]) {
-        prev[value] = 1;
-        return prev;
-      }
-
-      prev[value] += 1;
-      return prev;
-    }, {} as NumberMap);
-
-    return Object.entries<number>(valueCounter).reduce(
-      (prev, [value, count]) => {
-        if (count < 2) {
-          return prev;
+  public static async generateRandomValues(): Promise<number[]> {
+    const cardValues: number[] = [];
+    for (let colIdx = 0; colIdx < CARD_WIDTH_HEIGHT; colIdx++) {
+      const columnValues = COLUMN_VALUES[colIdx].slice();
+      for (let rowIdx = 0; rowIdx < CARD_WIDTH_HEIGHT; rowIdx++) {
+        if (cardValues.length === FREE_VALUE_INDEX - 1) {
+          cardValues.push(FREE_VALUE);
+          continue;
         }
 
-        return [...prev, { value: parseInt(value), count }];
-      },
-      [] as DuplicateValue[]
-    );
-  }
-
-  private validateColumnValues() {
-    for (let i = 0; i < this.values.length; i++) {
-      const v = this.values[i];
-      const columnIdx = i % VALUES_PER_COLUMN;
-      const validValueSet = COLUMN_VALUES[columnIdx];
-
-      // TODO Handle case when center value is 0
-      if (!validValueSet.has(v)) {
-        const validValuesStr = Array.from(validValueSet.values()).join(", ");
-        throw new Error(
-          `invalid column value ${v} at ${i} in column ${columnIdx}, expected one of ${validValuesStr}`
-        );
+        const randIdx = randomInt(0, columnValues.length);
+        const [val] = columnValues.splice(randIdx, 1);
+        cardValues.push(val);
       }
     }
-  }
-
-  // TODO Since this will now be done in contract, remove this and alll sub-methods?
-  public validate() {
-    if (this.values.length !== NUM_VALUES) {
-      throw new Error(
-        `invalid number of card values. got ${this.values.length}, expected ${NUM_VALUES}`
-      );
-    }
-
-    const middleIdx = Math.ceil(NUM_VALUES / 2);
-    if (this.values[middleIdx] !== FREE_VALUE) {
-      throw new Error(
-        `invalid center value at ${middleIdx}. got ${this.values[middleIdx]}, expected ${FREE_VALUE}`
-      );
-    }
-
-    const duplicates = this.getDuplicateValues();
-    if (duplicates.length) {
-      throw new Error(
-        `duplicate value(s): ${duplicates
-          .map((d) => `${d.count} ${d.value}'s`)
-          .join(", ")}`
-      );
-    }
-
-    this.validateColumnValues();
+    return cardValues;
   }
 }
