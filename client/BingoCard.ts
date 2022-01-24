@@ -49,6 +49,7 @@ export default class BingoCard {
       const columnIdx = i % VALUES_PER_COLUMN;
       const validValueSet = COLUMN_VALUES[columnIdx];
 
+      // TODO Handle case when center value is 0
       if (!validValueSet.has(v)) {
         const validValuesStr = Array.from(validValueSet.values()).join(", ");
         throw new Error(
@@ -58,6 +59,7 @@ export default class BingoCard {
     }
   }
 
+  // TODO Since this will now be done in contract, remove this and alll sub-methods?
   public validate() {
     if (this.values.length !== NUM_VALUES) {
       throw new Error(

@@ -2,7 +2,7 @@ import { expect } from "chai";
 import { BigNumber, Signer } from "ethers";
 import { ethers } from "hardhat";
 import { BingoGame, BingoGame__factory } from "../typechain-types";
-import { BingoCard } from "../client";
+import { BingoCard, NUM_VALUES } from "../client";
 
 describe("integration", () => {
   let signer: Signer;
@@ -16,11 +16,12 @@ describe("integration", () => {
 
   it("runs a bingo game successfully", async function () {
     const numCards = 10;
+    const rawCards: number[][] = new Array<number[]>(numCards).fill(
+      new Array<number>(NUM_VALUES).fill(0)
+    );
     const signerAddress = await signer.getAddress();
 
-    // TODO Consider passing a determinisitc seed here so game is always the same
-    // Maybe have test suite generate it so results can be reproduced.
-    const txn = await game.mintCards(signerAddress, numCards, 0);
+    const txn = await game.mintCards(signerAddress, rawCards);
 
     const txnReceipt = await txn.wait(1);
     const events = txnReceipt.events?.filter(
@@ -38,8 +39,10 @@ describe("integration", () => {
         return new BingoCard(id, values);
       })
     );
-    for (const c of cards) {
-      c.validate();
+    for (let i = 0; i < cards.length; i++) {
+      const c = cards[i];
+      expect(c.values).to.equal(rawCards[i]);
+      expect(c.tokenId).to.equal(i + 1);
     }
   });
 });

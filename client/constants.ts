@@ -1,3 +1,4 @@
+// TODO Can we pull all of these off of the contract instead?
 const fillArray = (start: number, count: number): number[] => {
   return new Array(count).fill(0).map((_, i) => i + start);
 };
@@ -5,6 +6,7 @@ const fillArray = (start: number, count: number): number[] => {
 export const CARD_WIDTH = 5;
 export const CARD_HEIGHT = 5;
 export const FREE_VALUE = 0;
+export const FREE_VALUE_XY = 2;
 export const NUM_VALUES = CARD_WIDTH * CARD_HEIGHT;
 export const VALUES_PER_COLUMN = 15;
 export const COLUMN_VALUES = new Array(CARD_WIDTH)
