@@ -13,11 +13,39 @@ contract BingoGame is ERC721 {
     mapping(uint256 => uint8[25]) private idToCardValues;
     uint8[75] public calledNumbers;
 
+    uint256[] private winningIds;
+    mapping(uint256 => uint8[5][]) private idToWinningLines;
+
     constructor() ERC721("BingoCard", "BC") {}
 
-    function mintCards(address owner, uint8[25][] memory cards) external {
-        require(cards.length > 0, "number of cards to mint < 1");
+    modifier gameHasStarted() {
+        require(hasStarted(), "game not started");
+        _;
+    }
+
+    modifier gameHasNotStarted {
         require(!hasStarted(), "game has already started");
+        _;
+    }
+
+    function getCardValues(uint256 tokenId) external view virtual returns (uint8[25] memory) {
+        return idToCardValues[tokenId];
+    }
+
+    function getWinningTokenIds() external view virtual returns (uint256[] memory) {
+        return winningIds;
+    }
+
+    function getWinningLines(uint256 tokenId) external view virtual returns (uint8[5][] memory) {
+        return idToWinningLines[tokenId];
+    }
+
+    function hasStarted() public view virtual returns (bool) {
+        return calledNumbers[0] > 0;
+    }
+
+    function mintCards(address owner, uint8[25][] memory cards) external gameHasNotStarted {
+        require(cards.length > 0, "number of cards to mint < 1");
 
         if (owner == address(0x0)) {
             // TODO Should this be tx.origin instead in case this call is nested?
@@ -29,23 +57,41 @@ contract BingoGame is ERC721 {
         }
     }
 
-    function getCardValues(uint256 tokenId) external view virtual returns (uint8[25] memory) {
-        return idToCardValues[tokenId];
-    }
-
-    function hasStarted() public view virtual returns (bool) {
-        return calledNumbers.length > 0 && calledNumbers[0] > 0;
-    }
-
-    function runGame() external {
+    function runGame() external gameHasNotStarted {
         // TODO Have Chainlink VRF or something similar provide randomness seed for the game.
+        // TODO Verify no 0's
+        // TODO Verify no numbers > 75
+        // TODO Verifiy no duplicates
     }
 
-    function mintCard(address owner, uint8[25] memory card) internal {
+    function determineWinners() external gameHasStarted {
+        uint256 numCards = tokenIdCounter.current();
+
+        // Can skip checking first 3 numbers
+        for (uint8 count = Constants.CARD_WIDTH_HEIGHT - uint8(2); count < calledNumbers.length; count++) {
+            uint80 calledNumbersBitmask = getCalledNumbersBitmask(count);
+
+            for (uint256 id = 0; id < numCards; id++) {
+                uint8[5][] memory winningLines = BingoCard.getWinningLines(idToCardValues[id], calledNumbersBitmask);
+                if (winningLines.length < 1) {
+                    continue;
+                }
+
+                winningIds.push(id);
+                idToWinningLines[id] = winningLines;
+            }
+        }
+
+        require(winningIds.length > 0, "no winners determined");
+
+        // TODO Emit winners in events
+    }
+
+    function mintCard(address owner, uint8[25] memory card) private {
         BingoCard.validate(card);
 
-        tokenIdCounter.increment();
         uint256 newCardId = tokenIdCounter.current();
+        tokenIdCounter.increment();
 
         idToCardValues[newCardId] = card;
         _safeMint(owner, newCardId);
@@ -53,10 +99,16 @@ contract BingoGame is ERC721 {
 
     // TODO This is likely a bad way to generate random numebers,
     // need something like Chainlike VRF instead.
-    function random() internal view virtual returns (uint256) {
+    function random() private view returns (uint256) {
         return uint256(keccak256(abi.encodePacked(
             block.difficulty, blockhash(block.number - 1), msg.sender
         )));
+    }
+
+    function getCalledNumbersBitmask(uint8 count) private view returns (uint80 calledNumbersBitmask) {
+        for (uint8 i = 0; i < count; i++) {
+            calledNumbersBitmask |= uint80(1 << calledNumbers[i]);
+        }
     }
 
     function _baseURI() override internal view virtual returns (string memory) {

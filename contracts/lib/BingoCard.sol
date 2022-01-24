@@ -31,4 +31,12 @@ library BingoCard {
             require(columnValuesBitmask & valueBitmask == valueBitmask, "column value not valid");
         }
     }
+
+    function getWinningLines(uint8[25] memory card, uint80 calledNumbersBitmask) internal pure returns (uint8[5][] memory) {
+        uint80[12] memory lineBitmasks = getLineBitmasks(card);
+    }
+
+    function getLineBitmasks(uint8[25] memory card) private pure returns (uint80[12] memory) {
+
+    }
 }

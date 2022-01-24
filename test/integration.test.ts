@@ -45,7 +45,21 @@ describe("integration", () => {
     for (let i = 0; i < cards.length; i++) {
       const c = cards[i];
       expect(c.values).to.deep.equal(rawCards[i]);
-      expect(c.tokenId).to.equal(i + 1);
+      expect(c.tokenId).to.equal(i);
+    }
+
+    await game.runGame();
+
+    await game.determineWinners();
+
+    const winningIds = await game.getWinningTokenIds();
+    for (const id of winningIds) {
+      const cardValues = await game.getCardValues(id);
+      const winningLines = await game.getWinningLines(id);
+
+      console.warn("#".repeat(10));
+      console.warn(id, cardValues);
+      console.warn(winningLines);
     }
   });
 });
