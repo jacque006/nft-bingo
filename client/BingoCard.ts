@@ -18,7 +18,7 @@ export default class BingoCard {
     for (let colIdx = 0; colIdx < CARD_WIDTH_HEIGHT; colIdx++) {
       const columnValues = COLUMN_VALUES[colIdx].slice();
       for (let rowIdx = 0; rowIdx < CARD_WIDTH_HEIGHT; rowIdx++) {
-        if (cardValues.length === FREE_VALUE_INDEX - 1) {
+        if (cardValues.length === FREE_VALUE_INDEX) {
           cardValues.push(FREE_VALUE);
           continue;
         }

@@ -6,8 +6,7 @@ library Constants {
     uint8 constant internal CARD_WIDTH_HEIGHT = 5;
     uint8 constant internal MAX_VALUE = 75;
     uint8 constant internal FREE_VALUE = 0;
-    // Free value's x/y coordinates in 2D representation of card.
-    uint8 constant internal FREE_VALUE_XY = 2;
+    uint8 constant internal FREE_VALUE_INDEX = 12;
 
     function getColumnValuesBitmask(uint8 columnIndex) internal pure returns (uint80) {
         require(columnIndex < CARD_WIDTH_HEIGHT, "column index > 4");
