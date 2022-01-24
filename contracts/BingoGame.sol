@@ -11,8 +11,8 @@ contract BingoGame is ERC721 {
 
     // TODO Should the card values be abi.encode/abi.encodePacked to save space?
     mapping(uint256 => uint8[25]) private idToCardValues;
-    uint8[75] public calledNumbers;
 
+    uint8[75] private calledNumbers;
     uint256[] private winningIds;
     mapping(uint256 => uint8[5][]) private idToWinningLines;
 
@@ -30,6 +30,10 @@ contract BingoGame is ERC721 {
 
     function getCardValues(uint256 tokenId) external view virtual returns (uint8[25] memory) {
         return idToCardValues[tokenId];
+    }
+
+    function getCalledNumbers() external view virtual returns (uint8[75] memory) {
+        return calledNumbers;
     }
 
     function getWinningTokenIds() external view virtual returns (uint256[] memory) {
@@ -59,9 +63,18 @@ contract BingoGame is ERC721 {
 
     function runGame() external gameHasNotStarted {
         // TODO Have Chainlink VRF or something similar provide randomness seed for the game.
-        // TODO Verify no 0's
-        // TODO Verify no numbers > 75
-        // TODO Verifiy no duplicates
+
+        uint8[75] memory callableNumbers = Constants.getAllCallableNumbers();
+        uint8[75] memory currentCalledNumbers;
+        for (uint8 i = 0; i < calledNumbers.length; i++) {
+            uint8 randIdx = uint8(random() % (callableNumbers.length - i));
+            currentCalledNumbers[i] = callableNumbers[randIdx];
+
+            for (uint8 spliceIdx = randIdx; spliceIdx < callableNumbers.length - 1; spliceIdx++) {
+               callableNumbers[spliceIdx] = callableNumbers[spliceIdx + 1];
+            }
+        }
+        calledNumbers = currentCalledNumbers;
     }
 
     function determineWinners() external gameHasStarted {

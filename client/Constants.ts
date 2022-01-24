@@ -13,3 +13,7 @@ export const COLUMN_VALUES = [
   // O
   [61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75],
 ];
+export const ALL_VALUES = COLUMN_VALUES.reduce(
+  (prev, col) => [...prev, ...col],
+  []
+);
