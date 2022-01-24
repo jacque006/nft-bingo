@@ -18,7 +18,9 @@ describe("integration", () => {
     const numCards = 10;
     const signerAddress = await signer.getAddress();
 
-    const txn = await game.createCards(signerAddress, numCards);
+    // TODO Consider passing a determinisitc seed here so game is always the same
+    // Maybe have test suite generate it so results can be reproduced.
+    const txn = await game.mintCards(signerAddress, numCards, 0);
 
     const txnReceipt = await txn.wait(1);
     const events = txnReceipt.events?.filter(

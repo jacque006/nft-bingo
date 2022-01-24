@@ -1,7 +1,7 @@
 import { BigNumber } from "ethers";
 import {
   NUM_VALUES,
-  VALID_COLUMN_VALUES,
+  COLUMN_VALUES,
   FREE_VALUE,
   VALUES_PER_COLUMN,
 } from "./constants";
@@ -47,7 +47,7 @@ export default class BingoCard {
     for (let i = 0; i < this.values.length; i++) {
       const v = this.values[i];
       const columnIdx = i % VALUES_PER_COLUMN;
-      const validValueSet = VALID_COLUMN_VALUES[columnIdx];
+      const validValueSet = COLUMN_VALUES[columnIdx];
 
       if (!validValueSet.has(v)) {
         const validValuesStr = Array.from(validValueSet.values()).join(", ");

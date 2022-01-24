@@ -6,7 +6,7 @@
   "scripts": {
     "build": "hardhat compile",
     "test": "hardhat test",
-    "lint": "eslint"
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx && solhint 'contracts/**/*.sol'"
   },
   "repository": {
     "type": "git",
@@ -38,7 +38,6 @@
     "chai": "^4.3.4",
     "eslint": "^8.7.0",
     "eslint-config-prettier": "^8.3.0",
-    "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-prettier": "^4.0.0",
     "ethers": "^5.5.3",
     "hardhat": "^2.8.3",
