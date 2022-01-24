@@ -67,7 +67,9 @@ describe("integration", () => {
     }
     expect(Object.keys(allValuesMap).length).to.equal(0);
 
+    console.warn("start determine winners");
     await game.determineWinners();
+    console.warn("end determine winners");
 
     // Verify at least one winner with valid line(s).
     const winningIds = await game.getWinningTokenIds();

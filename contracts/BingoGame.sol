@@ -4,6 +4,8 @@ pragma solidity >=0.8.11;
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "./lib/BingoCard.sol";
+// TODO remove
+import "hardhat/console.sol";
 
 contract BingoGame is ERC721 {
     using Counters for Counters.Counter;
@@ -82,16 +84,23 @@ contract BingoGame is ERC721 {
 
         // Can skip checking first 3 numbers
         for (uint8 count = Constants.CARD_WIDTH_HEIGHT - uint8(2); count < calledNumbers.length; count++) {
+            console.log("count", count);
             uint80 calledNumbersBitmask = getCalledNumbersBitmask(count);
 
             for (uint256 id = 0; id < numCards; id++) {
+                console.log("id", count);
                 uint8[5][] memory winningLines = BingoCard.getWinningLines(idToCardValues[id], calledNumbersBitmask);
                 if (winningLines.length < 1) {
                     continue;
                 }
 
+                console.log("winner", id);
                 winningIds.push(id);
                 idToWinningLines[id] = winningLines;
+            }
+
+            if (winningIds.length > 0) {
+                break;
             }
         }
 
